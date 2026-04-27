@@ -1,0 +1,6 @@
+{
+  "name": "GIF Gatcha & Daily Reveal",
+  "description": "A daily curated GIF experience featuring a gatcha-style opening mechanism, inventory collection, and automated daily updates.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}

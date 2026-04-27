@@ -1,0 +1,34 @@
+name: Daily GIF
+
+on:
+  schedule:
+    - cron: "0 9 * * *"  # 9:00 AM UTC daily
+  workflow_dispatch:
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch random GIF and update daily.json
+        env:
+          GIPHY_API_KEY: ${{ secrets.GIPHY_API_KEY }}
+        run: |
+          DATA=$(curl -s "https://api.giphy.com/v1/gifs/random?api_key=$GIPHY_API_KEY&rating=g")
+          URL=$(echo $DATA | jq -r '.data.images.original.url')
+          TITLE=$(echo $DATA | jq -r '.data.title')
+          DATE=$(date -u +%Y-%m-%d)
+          jq -n --arg url "$URL" --arg title "$TITLE" --arg date "$DATE" \
+            '{url: $url, title: $title, date: $date, isManual: false}' > daily.json
+
+      - name: Commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add daily.json
+          git diff --cached --quiet || git commit -m "chore: daily gif ${{ github.run_id }}"
+          git push
